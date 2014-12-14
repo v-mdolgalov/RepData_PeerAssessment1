@@ -8,20 +8,68 @@ output:
 
 ## Loading and preprocessing the data
 
-tblload = read.csv("RepData_PeerAssessment1/activity.csv")
+We are getting the data using $read.csv$ function. Then we check what are the data
+columns and values using $head$ function. We $aggregate$ to have 
+average values by day and ignore time intervals. We give resulting columns new
+$colnames$ using respective funciton. We embelish the dataset with weekday names
+and numbers using $format$ and $wday$ functions.
+
+```{r}
+require(lubridate)
+tblload = read.csv("~/git/RepData_PeerAssessment1/activity.csv")
+
 head(tblload)
-mean(tblload[,1])
+stpByDay= aggregate(tblload$steps, list(tblload$date), mean, na.action=na.omit)
+colnames(stpByDay) = c('date','stpAvg')
+dow <- function(x) format(as.Date(x), "%A")
+stpByDay$weekDay <- dow(stpByDay$date)
+stpByDay$weekDayNum <- wday(stpByDay$date)
+table(stpByDay$weekDay)
+
+
+```
+
+Let's see what we have in tabular form. In the next section we will analyze plots.
+```{r}
+library(xtable)
+print(stpByDay, type = "HTML")
+
+```
 
 ## What is mean total number of steps taken per day?
+Let's see what is the average mean, ignoring NA values.
+```{r}
+mean(stpByDay$stpAvg, na.rm=TRUE)
 
+
+```
 
 
 ## What is the average daily activity pattern?
-
-
+First we see the overall plot by all days, then we analyze the plot by weekdays.
+Lastly we analyze the histogram to see what average number of steps are most 
+common across the whole dataset.
+```{r}
+plot(stpByDay$stpAvg ~ stpByDay$date)
+plot(stpByDay$weekDayNum, stpByDay$stpAvg)
+hist(stpByDay$stpAvg)
+```
 
 ## Imputing missing values
+Replace missing values with average mean steps.
+```{r}
+missingIdx = is.na(stpByDay$stpAvg)
 
+stpByDay$stpAvg[missingIdx] = mean(stpByDay$stpAvg, na.rm=TRUE)
+stpByDay
 
+```
+No missing values are in the dataset now.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+Let's look at our plot by weekdays again. Saturday (day 6) and Sunday (day 1) 
+look distinct, different from the rest of the days, they have less dispersion, their data points are tightly grouped.
+```{r}
+plot(stpByDay$weekDayNum, stpByDay$stpAvg)
+
+```

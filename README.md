@@ -1,3 +1,8 @@
+Please use this URL to review the final analysis:
+http://htmlpreview.github.io/?https://raw.githubusercontent.com/v-mdolgalov/RepData_PeerAssessment1/master/PA1_template.html
+
+Please review the latest commit as I fixed minor bugs.
+
 ## Introduction
 
 It is now possible to collect a large amount of data about personal

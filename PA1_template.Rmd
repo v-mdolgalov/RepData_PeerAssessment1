@@ -37,9 +37,10 @@ print(stpByDay, type = "HTML")
 ```
 
 ## What is mean total number of steps taken per day?
-Let's see what is the average mean, ignoring NA values.
+Let's see what is the average mean and median, ignoring NA values.
 ```{r}
 mean(stpByDay$stpAvg, na.rm=TRUE)
+median(stpByDay$stpAvg, na.rm=TRUE)
 
 
 ```
@@ -53,6 +54,13 @@ common across the whole dataset.
 plot(stpByDay$stpAvg ~ stpByDay$date)
 plot(stpByDay$weekDayNum, stpByDay$stpAvg)
 hist(stpByDay$stpAvg)
+```
+
+The next plot shows us that most steps are usually taken at around time interval 800-900:
+
+```{r}
+adt<-aggregate(steps~interval ,data=tblload, FUN=mean)
+plot(adt$interval, adt$steps, type="l", xlab="time interval", ylab="average steps")
 ```
 
 ## Imputing missing values
@@ -71,5 +79,6 @@ Let's look at our plot by weekdays again. Saturday (day 6) and Sunday (day 1)
 look distinct, different from the rest of the days, they have less dispersion, their data points are tightly grouped.
 ```{r}
 plot(stpByDay$weekDayNum, stpByDay$stpAvg)
+hist(stpByDay$stpAvg)
 
 ```

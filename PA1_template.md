@@ -122,7 +122,7 @@ print(stpByDay, type = "HTML")
 ```
 
 ## What is mean total number of steps taken per day?
-Let's see what is the average mean, ignoring NA values.
+Let's see what is the average mean and median, ignoring NA values.
 
 ```r
 mean(stpByDay$stpAvg, na.rm=TRUE)
@@ -130,6 +130,14 @@ mean(stpByDay$stpAvg, na.rm=TRUE)
 
 ```
 ## [1] 37.3826
+```
+
+```r
+median(stpByDay$stpAvg, na.rm=TRUE)
+```
+
+```
+## [1] 37.37847
 ```
 
 
@@ -155,6 +163,16 @@ hist(stpByDay$stpAvg)
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-3.png) 
+
+The next plot shows us that most steps are usually taken at around time interval 800-900:
+
+
+```r
+adt<-aggregate(steps~interval ,data=tblload, FUN=mean)
+plot(adt$interval, adt$steps, type="l", xlab="time interval", ylab="average steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
 ## Imputing missing values
 Replace missing values with average mean steps.
@@ -240,4 +258,10 @@ look distinct, different from the rest of the days, they have less dispersion, t
 plot(stpByDay$weekDayNum, stpByDay$stpAvg)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
+```r
+hist(stpByDay$stpAvg)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-2.png) 

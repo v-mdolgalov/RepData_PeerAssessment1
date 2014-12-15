@@ -1,4 +1,4 @@
-<b>Please use this URL to review</b> the final analysis:
+<b><u>Please use this URL to review</u></b> the final analysis:
 http://htmlpreview.github.io/?https://raw.githubusercontent.com/v-mdolgalov/RepData_PeerAssessment1/master/PA1_template.html
 
 Please review the latest commit as I fixed minor bugs.

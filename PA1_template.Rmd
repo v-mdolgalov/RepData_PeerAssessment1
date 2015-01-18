@@ -6,79 +6,97 @@ output:
 ---
 
 
-## Loading and preprocessing the data
+### Loading and preprocessing the data
 
-We are getting the data using $read.csv$ function. Then we check what are the data
-columns and values using $head$ function. We $aggregate$ to have 
-average values by day and ignore time intervals. We give resulting columns new
-$colnames$ using respective funciton. We embelish the dataset with weekday names
-and numbers using $format$ and $wday$ functions.
+We are getting the data using $read.csv$ function. We embelish the dataset with weekday names and numbers using $format$ and $wday$ functions.
 
 ```{r}
 require(lubridate)
-tblload = read.csv("~/git/RepData_PeerAssessment1/activity.csv")
+dat1 = read.csv("~/git/RepData_PeerAssessment1/activity.csv")
 
-head(tblload)
-stpByDay= aggregate(tblload$steps, list(tblload$date), mean, na.action=na.omit)
-colnames(stpByDay) = c('date','stpAvg')
 dow <- function(x) format(as.Date(x), "%A")
-stpByDay$weekDay <- dow(stpByDay$date)
-stpByDay$weekDayNum <- wday(stpByDay$date)
-table(stpByDay$weekDay)
+dat1$weekDay <- dow(dat1$date)
+dat1$weekDayNum <- wday(dat1$date)
 
-
+datetotals = aggregate(steps ~ date, data = dat1, FUN=sum)
 ```
-
-Let's see what we have in tabular form. In the next section we will analyze plots.
+### What is mean total number of steps taken per day?
+First we build histogram of total numer of steps
 ```{r}
-library(xtable)
-print(stpByDay, type = "HTML")
-
+hist(datetotals$steps, xlab = "Total Daily Number of Steps")
 ```
 
-## What is mean total number of steps taken per day?
+
 Let's see what is the average mean and median, ignoring NA values.
 ```{r}
-mean(stpByDay$stpAvg, na.rm=TRUE)
-median(stpByDay$stpAvg, na.rm=TRUE)
-
-
+mean(datetotals$steps, na.rm=TRUE)
+median(datetotals$steps, na.rm=TRUE)
 ```
 
-
-## What is the average daily activity pattern?
-First we see the overall plot by all days, then we analyze the plot by weekdays.
-Lastly we analyze the histogram to see what average number of steps are most 
-common across the whole dataset.
+### What is the average daily activity pattern?
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 ```{r}
-plot(stpByDay$stpAvg ~ stpByDay$date)
-plot(stpByDay$weekDayNum, stpByDay$stpAvg)
-hist(stpByDay$stpAvg)
+avdaily = aggregate(steps ~ interval, data = dat1, FUN = mean)
+plot(steps ~ interval, data=avdaily, type = "l", xlab = "Time Interval", ylab = "Mean # of Steps")
+
+avdaily[which.max(avdaily$steps),]
 ```
 
-The next plot shows us that most steps are usually taken at around time interval 800-900:
+*Result*: interval 835 has the largest number of steps.
+
+###Imputing Missing Values
+1. Calculate total number of NAs
+```{r}
+allNAs = is.na(dat1$steps)
+sum(allNAs)
+```
+2. Replace NAs with mean for the same date.
+Create a new dataset that is equal to the original dataset but with the missing data filled in.
+```{r}
+avgSteps = mean(dat1$steps, na.rm = TRUE)
+avgSteps
+dat2 = dat1 # head(dat2)
+datetotals$avgSteps = datetotals$steps/288
+m2= merge(dat1, datetotals, by.x = "date", by.y = "date")
+dat2 = dat1
+dat2$steps[allNAs] = m2$avgSteps[allNAs] 
+```
+
+Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+```{r}
+datetotals2 = aggregate(steps ~ date, data = dat2, FUN=sum)
+hist(datetotals2$steps, xlab = "Total Daily Number of Steps")
+```
+
+
+Let's see what is the average mean and median, ignoring NA values.
+```{r}
+mean(datetotals2$steps)
+median(datetotals2$steps)
+```
+
+
+*Impact*: histogram shows more occurances near the center of the distribution, 
+in general all the dates now have more steps because more values appeared. Both
+_median_ and _mean_ have changed after imputing the missing values.
+
+###Are there differences in activity patterns between weekdays and weekends?
+
+Using the dataset with the filled-in missing values for this part.
 
 ```{r}
-adt<-aggregate(steps~interval ,data=tblload, FUN=mean)
-plot(adt$interval, adt$steps, type="l", xlab="time interval", ylab="average steps")
-```
+dat2$daytype[dat2$weekDayNum == 1 | dat2$weekDayNum == 7] = "Weekend"
+dat2$daytype[dat2$weekDayNum != 1 & dat2$weekDayNum != 7] = "Workday"
+avdailyWE = aggregate(steps ~ interval, data = dat2[dat2$daytype == "Weekend",], FUN = mean)
+avdailyWD = aggregate(steps ~ interval, data = dat2[dat2$daytype == "Workday",], FUN = mean)
 
-## Imputing missing values
-Replace missing values with average mean steps.
-```{r}
-missingIdx = is.na(stpByDay$stpAvg)
+plot(steps ~ interval, data=avdailyWD, type = "l", main = "Activity chart for workdays", xlab = "Time Interval", ylab = "Mean # of Steps")
+plot(steps ~ interval, data=avdailyWE, type = "l", main = "Activity chart for weekends", xlab = "Time Interval", ylab = "Mean # of Steps")
 
-stpByDay$stpAvg[missingIdx] = mean(stpByDay$stpAvg, na.rm=TRUE)
-stpByDay
 
 ```
-No missing values are in the dataset now.
 
-## Are there differences in activity patterns between weekdays and weekends?
-Let's look at our plot by weekdays again. Saturday (day 6) and Sunday (day 1) 
-look distinct, different from the rest of the days, they have less dispersion, their data points are tightly grouped.
-```{r}
-plot(stpByDay$weekDayNum, stpByDay$stpAvg)
-hist(stpByDay$stpAvg)
+*Result*: workdays show significantly less activity in the middle of the day and more steps before the beginning of work hours. Weekend days show more activity throught the day, and there is not such a big spike around 9 a.m. as on workdays.
 
-```
+*Thank you for reviewing my work. Have a great day!*

@@ -33,7 +33,7 @@ hist(datetotals$steps, xlab = "Total Daily Number of Steps")
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 
-Let's see what is the average mean and median, ignoring NA values.
+Let's see what is the mean and median, ignoring NA values.
 
 ```r
 mean(datetotals$steps, na.rm=TRUE)
@@ -52,12 +52,13 @@ median(datetotals$steps, na.rm=TRUE)
 ```
 
 ### What is the average daily activity pattern?
-1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+1. Make a time series plot of the 5-minute interval and the average number of steps taken, averaged across all days (y-axis)
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 ```r
 avdaily = aggregate(steps ~ interval, data = dat1, FUN = mean)
-plot(steps ~ interval, data=avdaily, type = "l", xlab = "Time Interval", ylab = "Mean # of Steps")
+plot(steps ~ interval, data=avdaily, type = "l", xlab = "Time Interval", 
+     main = "Time Series Plot of 5-minute Intervals", ylab = "Mean # of Steps")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
@@ -84,24 +85,14 @@ sum(allNAs)
 ```
 ## [1] 2304
 ```
-2. Replace NAs with mean for the same date.
-Create a new dataset that is equal to the original dataset but with the missing data filled in.
+2. Replace NAs with mean for the same date. We already have totals (sums) for each day, so we can easily get means for each day by dividing the totals by 288 (the number of 5-minutes intervals in a day). Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 ```r
-avgSteps = mean(dat1$steps, na.rm = TRUE)
-avgSteps
-```
-
-```
-## [1] 37.3826
-```
-
-```r
-dat2 = dat1 # head(dat2)
-datetotals$avgSteps = datetotals$steps/288
+dat2 = dat1
+datetotals$avgSteps = datetotals$steps/288 # adding a new column with average # of steps per interval for the same day
 m2= merge(dat1, datetotals, by.x = "date", by.y = "date")
 dat2 = dat1
-dat2$steps[allNAs] = m2$avgSteps[allNAs] 
+dat2$steps[allNAs] = m2$avgSteps[allNAs] # replace NAs with avgSteps for respective dates
 ```
 
 Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
@@ -133,7 +124,7 @@ median(datetotals2$steps)
 ```
 
 
-*Impact*: histogram shows more occurances near the center of the distribution, 
+*Result*: histogram shows more occurances near the center of the distribution, 
 in general all the dates now have more steps because more values appeared. Both
 _median_ and _mean_ have changed after imputing the missing values.
 
